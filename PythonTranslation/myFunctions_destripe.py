@@ -28,8 +28,8 @@ def main_mask_fft(img):
     options.medfilt_size=[5,5];
     options.box_mask=False;
 
-    [mask_fft,p_value_mask, statistics, positions, indecies, ring] = get_mask_fft(img,options);
-  #   [angle,binom_val] = get_stripe_angle(p_value_mask, ring);
+    [mask_fft,p_value_mask,ring] = get_mask_fft(img,options);
+    [angle,binom_val] = get_stripe_angle(p_value_mask, ring);
   #   [min_ind,min_val,binom_val_box] = get_stripe_best_box(p_value_mask,ring);
   #   d = min_ind(1);
   #   mask_fft_modif = numpy.fft.ifftshift(mask_fft);
@@ -51,6 +51,10 @@ def main_mask_fft(img):
     
     return mask_fft
 
+
+#### GET INITIAL FFT MASK, P_VALUES AND RING ####
+
+
 def get_mask_fft (img,options):
     # fft calculation
     im_fft = np.fft.fft2(img);
@@ -60,11 +64,11 @@ def get_mask_fft (img,options):
     ring = ring_initialize(img_fft_shift.shape);
 
     # main body
-    [p_value_mask] = generate_p_value_mask(img_fft_shift,ring,options);
+    p_value_mask = generate_p_value_mask(img_fft_shift,ring,options);
     binary_mask_medfilt = generate_binary_mask(p_value_mask,options);
     mask_fft = np.fft.ifftshift(binary_mask_medfilt);
     
-    return mask_fft,p_value_mask, ring
+    return mask_fft,p_value_mask,ring
 
 def ring_initialize (img_size):
     ring=namedtuple('ring',['center','radius_init','halfwidth','radius_end','radius','number'])
@@ -170,3 +174,110 @@ def generate_binary_mask(p_value_mask,options):
     binary_mask[np.where(p_value_mask_filtered <= options.cutoff_threshold)] = 1;
     
     return binary_mask
+
+
+
+######## GET STRIPE ANGLE #########
+
+def get_stripe_angle(p_value_mask, ring):
+    
+    eps = 1e-3;
+    drawres = False;
+    
+    size_min = ring.center - np.floor(ring.radius_end/np.sqrt(2));
+    size_max = ring.center + np.floor(ring.radius_end/np.sqrt(2));
+    
+    p_values = p_value_mask[range(int(size_min[0]),int(size_max[0])),range(int(size_min[1]),int(size_max[1]))];
+    p_values[np.where(np.isnan(p_values))]= 1;
+    p_values[np.where(p_values<=1e-32)] = 1e-32;
+    # center = floor(size(p_values)/2)+1;
+    # p_val = p_values;
+    
+    # % imagesc(p_val);
+    
+    # eps = options.eps;
+    # p=length(find(p_val<=eps))/numel(p_val);
+    # [siz1,siz2]=size(p_val);
+    
+    # angle = linspace(-pi/2+0.01,pi/2-0.01,180);
+    # mask=zeros(size(p_val));
+    # if options.drawres
+    # 	figure;
+    # 	im = imagesc(mask);
+    # 	drawnow;
+    # end
+    
+    # for i=1:length(angle)
+    #     if angle(i)>=-pi/4 && angle(i)<0
+    #     X = siz2-center(2);
+    #     Y = center(1)-floor(X*tan(angle(i)));
+    #     [x,y] = bresenham(center(1),center(2),siz1,Y);
+    #     ray = p_val(sub2ind(size(p_val),y,x));
+    #     v = length(find(ray<=eps));
+    #     N = numel(ray);
+    #     binom_val(i) = betainc(p,v+1,N-v);
+    #     if options.drawres
+    # 	    mask = zeros(size(p_val));
+    # 	    mask(sub2ind(size(mask),y,x))=1;
+    # 	    im.CData=mask;
+    # 	    drawnow;
+    # 	end
+    #     end
+    
+    #     if angle(i)>=0 && angle(i)<pi/4
+    #     X = siz2-center(2);
+    #     Y = center(1)-floor(X*tan(angle(i)));
+    #     [x,y] = bresenham(center(1),center(2),siz1,Y);
+    #     ray = p_val(sub2ind(size(p_val),y,x));
+    #     v = length(find(ray<=eps));
+    #     N = numel(ray);
+    #     binom_val(i) = betainc(p,v+1,N-v);
+    #     if options.drawres
+    # 	    mask = zeros(size(p_val));
+    # 	    mask(sub2ind(size(mask),y,x))=1;
+    # 	    im.CData=mask;
+    # 	    drawnow;
+    # 	end
+    #     end
+    
+    #     if angle(i)<-pi/4 && angle(i)>=-pi/2
+    #     Y = siz2-center(2);
+    #     X = center(1)-floor(Y*tan(pi/2-angle(i)));
+    #     [x,y] = bresenham(center(1),center(2),X,siz2);
+    #     ray = p_val(sub2ind(size(p_val),y,x));
+    #     v = length(find(ray<=eps));
+    #     N = numel(ray);
+    #     binom_val(i) = betainc(p,v+1,N-v);
+    #     if options.drawres
+    # 	    mask = zeros(size(p_val));
+    # 	    mask(sub2ind(size(mask),y,x))=1;
+    # 	    im.CData=mask;
+    # 	    drawnow;
+    #     end
+    # 	end
+    
+    #     if angle(i)>pi/4 && angle(i)<=pi/2
+    #     Y = siz2-center(2);
+    #     X = center(1)+floor(Y*tan(pi/2-angle(i)));
+    #     [x,y] = bresenham(center(1),center(2),X,1);
+    #     ray = p_val(sub2ind(size(p_val),y,x));
+    #     v = length(find(ray<=eps));
+    #     N = numel(ray);
+    #     binom_val(i) = betainc(p,v+1,N-v);
+    #     if options.drawres
+    # 	    mask = zeros(size(p_val));
+    # 	    mask(sub2ind(size(mask),y,x))=1;
+    # 	    im.CData=mask;
+    # 	    drawnow;
+    # 	end
+    #     end
+    # end
+    # if options.drawres
+    # 	figure;
+    # 	polar(angle,binom_val);
+    # 	figure;
+    # 	plot(rad2deg(angle),log10(binom_val));
+    # end
+    # end
+
+    return angle,binom_val
