@@ -13,7 +13,7 @@ from myFunctions_destripe import main_mask_fft
 #import cv2
 
 
-imagePath=r"C:\Users\Pedro Gomez Galvez\Documents\Lab\Destripe\FIBdeSEMAna_cropped_8bits_resize.tif"
+imagePath=r"C:\Users\Pedro Gomez Galvez\Documents\Lab\Destripe_EM\FIBdeSEMAna_cropped_8bits_resize.tif"
 
 img_noisy=imread(imagePath);#.astype(np.double);
 #img_noisy = cv2.resize(img_noisy, dsize=(1064,898), interpolation=cv2.INTER_LINEAR)

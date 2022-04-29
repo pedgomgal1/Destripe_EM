@@ -159,7 +159,7 @@ def fit_2D_gaussian(fft_in_ring,outray_ind):
     Data=np.subtract(np.transpose(Data), np.resize(Mu,(len(Data[0]),len(Mu))))
     Data = np.matmul(Data,scipy.linalg.fractional_matrix_power(Sigma,-0.5));
     Data_rayl = np.sum(np.power(Data,2),axis=1);
-    p_values = rayleigh.cdf(Data_rayl,q='upper');#we need to get the upper tail probability
+    p_values =  1-rayleigh.cdf(Data_rayl);#we need to get the upper tail probability
 
     return Mu,Sigma,p_values
 

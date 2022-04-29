@@ -4,7 +4,7 @@ addpath(genpath(pwd));
 %% Load dataset 3D
 
 %load(fullfile('data','dataset_3520_6580_5600_rot.mat'));
-img = double(imread('../../FIBdeSEMAna_cropped_8bits.tif'));
+img = double(imread('../FIBdeSEMAna_cropped_8bits_resize.tif'));
 % img=imresize(img,0.1);
 slices=img;
 %slices = double(slices(1:end,1:end,1:2:20));
