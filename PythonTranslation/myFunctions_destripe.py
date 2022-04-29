@@ -78,7 +78,7 @@ def ring_initialize (img_size):
 
 def generate_p_value_mask (img,ring,options):
     p_value_mask = np.empty(img.shape);
-    p_value_mask[:] = np.nan;
+    p_value_mask[:] = None;
     pos_x=[None] * ring.number;
     pos_y=[None] * ring.number;
     angles=[None] * ring.number;
@@ -93,7 +93,7 @@ def generate_p_value_mask (img,ring,options):
         fft_in_ring[i] = img[pos_x[i],pos_y[i]];
         [outray_ind[i],inray_ind[i]] = get_ray_ind(angles[i],options);
         [Mu[i],Sigma[i],p_valuesImg[i]] = fit_2D_gaussian(fft_in_ring[i],outray_ind[i]);
-        # p_value_mask(pos_x[i],pos_y[i]) = p_valuesImg[i];
+        p_value_mask[pos_x[i],pos_y[i]] = p_valuesImg[i];
         
     # statistics=namedtuple('statistics',['Mu','Sigma','p_values']);
     # statistics.Mu = Mu;
